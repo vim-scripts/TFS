@@ -1,0 +1,46 @@
+*tfs.txt*  Plugin for using Microsoft Team Foundation Server (TFS) while
+editing files with VIM.
+
+Author:   Ben Staniford <ben at staniford dot net>      *tfs-author*
+License:  Same terms as Vim itself (see |license|)
+
+INTRODUCTION                                            *tfs*
+
+This plugin is a tool which allows TFS version control integration while
+editing files with VIM.  It's comparatively full featured and allows:
+
+  * Add/Check-in/Checkout/Revert/Get Latest
+  * Getting specific versions of the current file
+  * Diffing the current file against the latest version
+  * Checking which files have been modified
+  * Looking at the history of the current file
+  * Diffing the current file against a particular changeset
+  * Diffing the current file against the latest version
+
+MAPPINGS                                                *tfs-mappings*
+
+In addition to the GVIM menu, the following mappings are provided by
+default.
+
+  Mapping  Command        Purpose ~
+  \ta      TfAdd          Add current file to TFS
+  \to      TfAdd          Check out current file from TFS
+  \ti      TfCheckin      Check current file into TFS with comment 
+  \tl      TfGetLatest    Get the latest version of current file
+  \tr      TfRevert       Revert local changes to current file
+  \th      TfHistory      Get the history of the local file
+  \tv      TfViewVer      Preview a specific version of the file
+  \td      TfDiffVer      Diff current file against specific version
+  \tt      TfDiffLatest   Diff recent changes against latest
+  \ts      TfStatus       Show all files which have been modified
+
+OTHER COMMANDS                                      *tfs-other-commands*
+
+  Command                 Purpose ~
+  Tf "command line"       Run a raw tf command
+  TfHelp                  Help for the tf command
+  TfPt "command line"     Run a raw tfpt command
+  TfPtHelp                Help for the tfpt command
+  TfAnnotate              Examine annotated view of current file
+  TfHistoryDetailed       See detailed branch history for current file
+
