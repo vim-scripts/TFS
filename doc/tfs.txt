@@ -7,7 +7,8 @@ License:  Same terms as Vim itself (see |license|)
 INTRODUCTION                                            *tfs*
 
 This plugin is a tool which allows TFS version control integration while
-editing files with VIM.  It's comparatively full featured and allows:
+editing files with VIM.  It supports TFS with Visual Studio 2005,2008 &
+2010.  It's comparatively full featured and allows:
 
   * Add/Check-in/Checkout/Revert/Get Latest
   * Getting specific versions of the current file
@@ -24,7 +25,7 @@ default.
 
   Mapping  Command        Purpose ~
   \ta      TfAdd          Add current file to TFS
-  \to      TfAdd          Check out current file from TFS
+  \to      TfCheckout     Check out current file from TFS
   \ti      TfCheckin      Check current file into TFS with comment 
   \tl      TfGetLatest    Get the latest version of current file
   \tr      TfRevert       Revert local changes to current file

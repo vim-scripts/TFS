@@ -5,7 +5,7 @@
 " Maintainer:   Ben Staniford <ben at staniford dot net> License: Copyright
 " (c) 2011 Ben Staniford
 "
-" Version: 1.0
+" Version: 1.0.1
 "
 " Permission is hereby granted, free of charge, to any person obtaining a copy
 " of this software and associated documentation files (the "Software"), to
@@ -271,14 +271,14 @@ endfunction
 "
 function! TfCmd(cmds)
     let command = s:tfs_tf.' '.a:cmds
-    call TfWindow(command, "", "human", window_mode_popup, s:bigpopup_size)
+    call TfWindow(command, "", "human", s:window_mode_popup, s:bigpopup_size)
 endfunction
 
 " -----------------------------------------------------------------------------------------
 
 function! TfPtCmd(cmds)
     let command = s:tfs_tfpt.' '.a:cmds
-    call TfWindow(command, "", "human", window_mode_popup, s:bigpopup_size)
+    call TfWindow(command, "", "human", s:window_mode_popup, s:bigpopup_size)
 endfunction
 
 " -----------------------------------------------------------------------------------------
