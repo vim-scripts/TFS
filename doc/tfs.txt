@@ -3,7 +3,7 @@ editing files with VIM.
 
 Author:   Ben Staniford <ben at staniford dot net>      *tfs-author*
 License:  Same terms as Vim itself (see |license|)
-Version:  1.1.1                                         *tfs-version*
+Version:  1.1.2                                         *tfs-version*
 
 INTRODUCTION                                            *tfs*
 
@@ -38,6 +38,7 @@ default.
   \tt      TfDiffLatest   Diff recent changes against latest
   \ts      TfStatus       Show all files which have been modified
   \te      TfShelve       Create a shelve set
+  \tu      TfUnshelve     Unshelve a shelve set
 
 OTHER COMMANDS                                      *tfs-other-commands*
 

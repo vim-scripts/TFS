@@ -5,7 +5,7 @@
 " Maintainer:   Ben Staniford <ben at staniford dot net> License: Copyright
 " (c) 2011 Ben Staniford
 "
-" Version: 1.1.1
+" Version: 1.1.2
 "
 " Permission is hereby granted, free of charge, to any person obtaining a copy
 " of this software and associated documentation files (the "Software"), to
@@ -95,7 +95,7 @@ let g:tfs_debug_mode = 0
 " mode     - Can be s:window_mode_viewer for viewing code etc, or s:window_mode_popup
 "            which simply shows the TFS output of a command in a small window.
 "
-" size     - The size in lines of a popup window (doesn't relate to viewer
+" size     - The max size in lines of a popup window (doesn't relate to viewer
 "            windows)
 "
 function! TfWindow(cmdline, label, filetype, mode, size)
@@ -141,10 +141,15 @@ function! TfWindow(cmdline, label, filetype, mode, size)
     filetype detect
     setlocal nomodified
 
-    " Resize appropriately
+    " Make window as big as output upto maximum of size param
     if (a:mode == s:window_mode_popup)
         norm 1Gdd
-        exe "resize ".a:size
+		let lastline = line('$')
+		if (lastline > a:size)
+			exe "resize ".a:size
+		else
+			exe 'resize '.(lastline + 1)
+		endif
     endif
 
 	" Return to users code window
@@ -336,6 +341,7 @@ command! TfAdd                        :call TfPopup("add")
 command! TfHelp                       :call TfCmd(s:tfs_tf, "help")
 command! TfGetLatest                  :call TfPopup("get")
 command! TfShelve                     :call TfUiCmd(s:tfs_tf, "shelve")
+command! TfUnshelve                   :call TfUiCmd(s:tfs_tf, "unshelve")
 command! TfCheckinAll                 :call TfUiCmd(s:tfs_tf, "checkin")
 command! TfReview                     :call TfUiCmd(s:tfs_tfpt, "review")
 command! TfPtHelp                     :call TfCmd(s:tfs_tfpt, "help")
@@ -372,6 +378,7 @@ if has('gui') && ( ! exists('g:tfs_menu') || g:tfs_menu != 0 )
     amenu <silent> &TFS.Review                :TfReview<cr>
     amenu <silent> &TFS.Check-in\ All         :TfCheckinAll<cr>
     amenu <silent> &TFS.Create\ Shelveset     :TfShelve<cr>
+    amenu <silent> &TFS.&Unshelve\ Shelveset  :TfUnshelve<cr>
 endif
 
 "
@@ -389,5 +396,6 @@ noremap \tt :TfDiffLatest<cr>
 noremap \ts :TfStatus<cr>
 noremap \tc :TfCheckinAll<cr>
 noremap \te :TfShelve<cr>
+noremap \tu :TfUnshelve<cr>
 
 endif
