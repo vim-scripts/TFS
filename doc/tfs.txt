@@ -3,6 +3,7 @@ editing files with VIM.
 
 Author:   Ben Staniford <ben at staniford dot net>      *tfs-author*
 License:  Same terms as Vim itself (see |license|)
+Version:  1.1                                           *tfs-version*
 
 INTRODUCTION                                            *tfs*
 
@@ -17,6 +18,7 @@ editing files with VIM.  It supports TFS with Visual Studio 2005,2008 &
   * Looking at the history of the current file
   * Diffing the current file against a particular changeset
   * Diffing the current file against the latest version
+  * Creating shelve sets
 
 MAPPINGS                                                *tfs-mappings*
 
@@ -27,6 +29,7 @@ default.
   \ta      TfAdd          Add current file to TFS
   \to      TfCheckout     Check out current file from TFS
   \ti      TfCheckin      Check current file into TFS with comment 
+  \tc      TfCheckinAll   Check in multiple files to
   \tl      TfGetLatest    Get the latest version of current file
   \tr      TfRevert       Revert local changes to current file
   \th      TfHistory      Get the history of the local file
@@ -34,6 +37,7 @@ default.
   \td      TfDiffVer      Diff current file against specific version
   \tt      TfDiffLatest   Diff recent changes against latest
   \ts      TfStatus       Show all files which have been modified
+  \te      TfShelve       Create a shelve set
 
 OTHER COMMANDS                                      *tfs-other-commands*
 
@@ -43,5 +47,6 @@ OTHER COMMANDS                                      *tfs-other-commands*
   TfPt "command line"     Run a raw tfpt command
   TfPtHelp                Help for the tfpt command
   TfAnnotate              Examine annotated view of current file
+  TfReview                Review changes made to workspace
   TfHistoryDetailed       See detailed branch history for current file
 

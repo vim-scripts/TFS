@@ -5,7 +5,7 @@
 " Maintainer:   Ben Staniford <ben at staniford dot net> License: Copyright
 " (c) 2011 Ben Staniford
 "
-" Version: 1.0.1
+" Version: 1.1
 "
 " Permission is hereby granted, free of charge, to any person obtaining a copy
 " of this software and associated documentation files (the "Software"), to
@@ -31,10 +31,6 @@
 " current file.  The output of the commands is captured in a new scratch window.
 "
 
-"TODO 
-" 1. Check-ins of multiple files?
-" 2. Shelf sets?
-
 if has ('win32')
 
 "
@@ -51,17 +47,17 @@ endif
 "
 " Work out which versions of tf.exe and tfpt.exe are available
 "
-if (filereadable('"'.s:pfiles.'\Microsoft Visual Studio 10.0\Common7\IDE\TF.exe"'))
+if (filereadable(s:pfiles.'\Microsoft Visual Studio 10.0\Common7\IDE\TF.exe'))
     let s:tfs_tf='"'.s:pfiles.'\Microsoft Visual Studio 10.0\Common7\IDE\TF.exe"'
     let s:tfs_recurse_command='/recursive'
 elseif(filereadable(s:pfiles.'\Microsoft Visual Studio 9.0\Common7\IDE\TF.exe'))
     let s:tfs_tf='"'.s:pfiles.'\Microsoft Visual Studio 9.0\Common7\IDE\TF.exe"'
     let s:tfs_recurse_command='/recursive'
-elseif(filereadable(s:pfiles.'\Microsoft Visual Studio 8.0\Common7\IDE\TF.exe'))
-    let s:tfs_tf='"'.s:pfiles.'\Microsoft Visual Studio 8.0\Common7\IDE\TF.exe"'
+elseif(filereadable(s:pfiles.'\Microsoft Visual Studio 8\Common7\IDE\TF.exe'))
+    let s:tfs_tf='"'.s:pfiles.'\Microsoft Visual Studio 8\Common7\IDE\TF.exe"'
     let s:tfs_recurse_command='/followbranches'
 endif
-if (filereadable('"'.s:pfiles.'\Microsoft Team Foundation Server 2010 Power Tools\TFPT.exe"'))
+if (filereadable(s:pfiles.'\Microsoft Team Foundation Server 2010 Power Tools\TFPT.exe'))
     let s:tfs_tfpt='"'.s:pfiles.'\Microsoft Team Foundation Server 2010 Power Tools\TFPT.exe"'
 elseif (filereadable(s:pfiles.'\Microsoft Team Foundation Server 2008 Power Tools\TFPT.exe'))
     let s:tfs_tfpt='"'.s:pfiles.'\Microsoft Team Foundation Server 2008 Power Tools\TFPT.exe"'
@@ -267,18 +263,33 @@ endfunction
 " -----------------------------------------------------------------------------------------
 
 "
-" Helper functions
+" Run a raw TF/TFTP command
 "
-function! TfCmd(cmds)
-    let command = s:tfs_tf.' '.a:cmds
+function! TfCmd(exe, cmds)
+    let command = a:exe.' '.a:cmds
     call TfWindow(command, "", "human", s:window_mode_popup, s:bigpopup_size)
 endfunction
 
 " -----------------------------------------------------------------------------------------
 
-function! TfPtCmd(cmds)
-    let command = s:tfs_tfpt.' '.a:cmds
-    call TfWindow(command, "", "human", s:window_mode_popup, s:bigpopup_size)
+" Launch TFS UI command asynchronously
+function! TfUiCmd(exe, cmds)
+
+	" Set CWD to file path, launch TF/TFPT, restore CWD
+	let owd = getcwd()
+	let filepath = expand('%:p:h')
+	silent! exe 'lcd '.filepath
+	echo filepath
+    let command = a:exe.' '.a:cmds
+
+	" To debug, switch to cmd /k
+	silent! exe '! start /min cmd /c '.command
+	silent! exe 'lcd '.owd
+
+	" Give some feedback so user doesn't think it's failed
+	redraw!
+	echom "Launching TFS UI..."
+	
 endfunction
 
 " -----------------------------------------------------------------------------------------
@@ -305,15 +316,18 @@ command! TfCheckin                    :call TfGetCheckinComments()
 command! TfRevert                     :call TfPopup("undo")
 command! TfStatus                     :call TfBigPopup("status")
 command! TfAdd                        :call TfPopup("add")
-command! TfHelp                       :call TfCmd("help")
+command! TfHelp                       :call TfCmd(s:tfs_tf, "help")
 command! TfGetLatest                  :call TfPopup("get")
+command! TfShelve                     :call TfUiCmd(s:tfs_tf, "shelve")
+command! TfCheckinAll                 :call TfUiCmd(s:tfs_tf, "checkin")
+command! TfReview                     :call TfUiCmd(s:tfs_tfpt, "review")
+command! TfPtHelp                     :call TfCmd(s:tfs_tfpt, "help")
+command! -complete=file -nargs=1 Tf   :call TfCmd(s:tfs_tf, <args>)
+command! -complete=file -nargs=1 TfPt :call TfCmd(s:tfs_tfpt, <args>)
 command! -nargs=? TfGetVersion        :call TfGetVersion(<args>)
-command! TfPtHelp                     :call TfPtCmd("help")
-command! -complete=file -nargs=1 Tf   :call TfCmd(<args>)
-command! -complete=file -nargs=1 TfPt :call TfPtCmd(<args>)
 command! TfHistory                    :call TfWindow(s:tfs_tf.' history '.s:tfs_recurse_command.' #', "", "tfcmd", s:window_mode_popup, s:bigpopup_size)
 command! TfHistoryDetailed            :call TfWindow(s:tfs_tf.' history /format:detailed '.s:tfs_recurse_command.' #', "", "tfcmd", s:window_mode_popup, s:bigpopup_size)
-command! TfAnnotate                   :call TfWindow(s:tfs_tfpt.' annotate '.expand('%:p'), "", "tfcmd", s:window_mode_popup, s:popup_size)
+command! TfAnnotate                   :call TfUiCmd(s:tfs_tfpt, "annotate ".expand('%:p'))
 command! TfDiffLatest                 :call TfDiffVer("T")
 command! -nargs=? TfDiffVer           :call TfDiffVer(<args>)
 command! -nargs=? TfViewVer           :call TfViewVer(<args>)
@@ -325,18 +339,22 @@ command! -nargs=? TfViewVer           :call TfViewVer(<args>)
 "
 if has('gui') && ( ! exists('g:tfs_menu') || g:tfs_menu != 0 )
     amenu <silent> &TFS.&Add                  :TfAdd<cr>
-    amenu <silent> &TFS.Check&out             :TfCheckout<cr>
-    amenu <silent> &TFS.Check&in              :TfCheckin<cr>
+    amenu <silent> &TFS.Check-&out            :TfCheckout<cr>
+    amenu <silent> &TFS.Check-&in             :TfCheckin<cr>
     amenu <silent> &TFS.&Get\ Latest          :TfGetLatest<cr>
     amenu <silent> &TFS.Get\ &Version         :TfGetVersion<cr>
     amenu <silent> &TFS.&Revert               :TfRevert<cr>
-    amenu <silent> &TFS.&Status               :TfStatus<cr>
     amenu <silent> &TFS.&History              :TfHistory<cr>
-    amenu <silent> &TFS.A&nnotations          :TfHistory<cr>
+    amenu <silent> &TFS.A&nnotations          :TfAnnotate<cr>
     amenu <silent> &TFS.D&etailed\ History    :TfHistoryDetailed<cr>
     amenu <silent> &TFS.Diff\ with\ &Latest   :TfDiffLatest<cr>
     amenu <silent> &TFS.View\ Ve&rsion        :TfViewVer<cr>
     amenu <silent> &TFS.&Diff\ with\ Version  :TfDiffVer<cr>
+    amenu <silent> &TFS.-Sep- :
+    amenu <silent> &TFS.&Status               :TfStatus<cr>
+    amenu <silent> &TFS.Review                :TfReview<cr>
+    amenu <silent> &TFS.Check-in\ All         :TfCheckinAll<cr>
+    amenu <silent> &TFS.Create\ Shelveset     :TfShelve<cr>
 endif
 
 "
@@ -352,5 +370,7 @@ noremap \tv :TfViewVer<cr>
 noremap \td :TfDiffVer<cr>
 noremap \tt :TfDiffLatest<cr>
 noremap \ts :TfStatus<cr>
+noremap \tc :TfCheckinAll<cr>
+noremap \te :TfShelve<cr>
 
 endif
