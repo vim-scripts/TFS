@@ -5,7 +5,7 @@
 " Maintainer:   Ben Staniford <ben at staniford dot net> License: Copyright
 " (c) 2011 Ben Staniford
 "
-" Version: 1.1
+" Version: 1.1.1
 "
 " Permission is hereby granted, free of charge, to any person obtaining a copy
 " of this software and associated documentation files (the "Software"), to
@@ -73,6 +73,11 @@ let s:window_mode_popup      = 2
 let s:popup_size             = 5
 let s:bigpopup_size          = 15
 
+"
+" Debug commands
+"
+let g:tfs_debug_mode = 0
+
 " -----------------------------------------------------------------------------------------
 
 "
@@ -121,8 +126,16 @@ function! TfWindow(cmdline, label, filetype, mode, size)
     setlocal modifiable
     setlocal nopaste
 
-    " Execute the TFS command
-    silent! exe 'noautocmd r!'.a:cmdline
+	let escaped_cmdline='cmd /c "'.a:cmdline.'"'
+
+    if (a:mode == s:window_mode_popup && g:tfs_debug_mode)
+		put =escaped_cmdline
+		norm o
+	endif
+
+    " Execute the TFS command in such as was as to allow ^"^" quoting of
+	" parameters
+    silent! exe 'noautocmd r!'.escaped_cmdline
 
     " Make sure syntax highlighting works if we're viewing code
     filetype detect
@@ -169,9 +182,9 @@ function! TfViewVer(...)
     let file_path=expand('%:p')
 
     if (ver < 0)
-        let cmd=s:tfs_tf.' view /console '.file_path
+        let cmd=s:tfs_tf.' view /console ^"'.file_path.'^"'
     else
-        let cmd=s:tfs_tf.' view /console '.file_path.' /version:'.ver
+        let cmd=s:tfs_tf.' view /console ^"'.file_path.'^" /version:'.ver
     endif
 
     call TfWindow(cmd, ver, expand('%:e'), s:window_mode_viewer, 0)
@@ -223,7 +236,7 @@ endfunction
 "
 function! TfCheckin(checkinfile, commentfile)
 
-    let command = s:tfs_tf.' checkin '.a:checkinfile.' /comment:@'.a:commentfile
+    let command = s:tfs_tf.' checkin ^"'.a:checkinfile.'^" /comment:@'.a:commentfile
     exe 'bd '.a:commentfile
     wincmd t
     exe 'e '.a:checkinfile
@@ -288,21 +301,25 @@ function! TfUiCmd(exe, cmds)
 
 	" Give some feedback so user doesn't think it's failed
 	redraw!
-	echom "Launching TFS UI..."
+    if (g:tfs_debug_mode)
+		echom command
+	else
+		echom "Launching TFS UI..."
+	endif
 	
 endfunction
 
 " -----------------------------------------------------------------------------------------
 
 function! TfPopup(cmd)
-    let command = s:tfs_tf.' '.a:cmd.' '.expand('%:p')
+    let command = s:tfs_tf.' '.a:cmd.' ^"'.expand('%:p').'^"'
     call TfWindow(command, "", "human", s:window_mode_popup, s:popup_size)
 endfunction
 
 " -----------------------------------------------------------------------------------------
 
 function! TfBigPopup(cmd)
-    let command = s:tfs_tf.' '.a:cmd.' '.expand('%:p')
+    let command = s:tfs_tf.' '.a:cmd.' ^"'.expand('%:p').'^"'
     call TfWindow(command, "", "human", s:window_mode_popup, s:bigpopup_size)
 endfunction
 
@@ -325,8 +342,8 @@ command! TfPtHelp                     :call TfCmd(s:tfs_tfpt, "help")
 command! -complete=file -nargs=1 Tf   :call TfCmd(s:tfs_tf, <args>)
 command! -complete=file -nargs=1 TfPt :call TfCmd(s:tfs_tfpt, <args>)
 command! -nargs=? TfGetVersion        :call TfGetVersion(<args>)
-command! TfHistory                    :call TfWindow(s:tfs_tf.' history '.s:tfs_recurse_command.' #', "", "tfcmd", s:window_mode_popup, s:bigpopup_size)
-command! TfHistoryDetailed            :call TfWindow(s:tfs_tf.' history /format:detailed '.s:tfs_recurse_command.' #', "", "tfcmd", s:window_mode_popup, s:bigpopup_size)
+command! TfHistory                    :call TfWindow(s:tfs_tf.' history '.s:tfs_recurse_command.' ^"#^"', "", "tfcmd", s:window_mode_popup, s:bigpopup_size)
+command! TfHistoryDetailed            :call TfWindow(s:tfs_tf.' history /format:detailed '.s:tfs_recurse_command.' ^"#^"', "", "tfcmd", s:window_mode_popup, s:bigpopup_size)
 command! TfAnnotate                   :call TfUiCmd(s:tfs_tfpt, "annotate ".expand('%:p'))
 command! TfDiffLatest                 :call TfDiffVer("T")
 command! -nargs=? TfDiffVer           :call TfDiffVer(<args>)
