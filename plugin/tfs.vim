@@ -47,7 +47,10 @@ endif
 "
 " Work out which versions of tf.exe and tfpt.exe are available
 "
-if (filereadable(s:pfiles.'\Microsoft Visual Studio 10.0\Common7\IDE\TF.exe'))
+if (filereadable(s:pfiles.'\Microsoft Visual Studio 11.0\Common7\IDE\TF.exe'))
+    let s:tfs_tf='"'.s:pfiles.'\Microsoft Visual Studio 11.0\Common7\IDE\TF.exe"'
+    let s:tfs_recurse_command='/recursive'
+elseif (filereadable(s:pfiles.'\Microsoft Visual Studio 10.0\Common7\IDE\TF.exe'))
     let s:tfs_tf='"'.s:pfiles.'\Microsoft Visual Studio 10.0\Common7\IDE\TF.exe"'
     let s:tfs_recurse_command='/recursive'
 elseif(filereadable(s:pfiles.'\Microsoft Visual Studio 9.0\Common7\IDE\TF.exe'))
@@ -57,7 +60,9 @@ elseif(filereadable(s:pfiles.'\Microsoft Visual Studio 8\Common7\IDE\TF.exe'))
     let s:tfs_tf='"'.s:pfiles.'\Microsoft Visual Studio 8\Common7\IDE\TF.exe"'
     let s:tfs_recurse_command='/followbranches'
 endif
-if (filereadable(s:pfiles.'\Microsoft Team Foundation Server 2010 Power Tools\TFPT.exe'))
+if (filereadable(s:pfiles.'\Microsoft Team Foundation Server 2012 Power Tools\TFPT.exe'))
+    let s:tfs_tfpt='"'.s:pfiles.'\Microsoft Team Foundation Server 2012 Power Tools\TFPT.exe"'
+elseif (filereadable(s:pfiles.'\Microsoft Team Foundation Server 2010 Power Tools\TFPT.exe'))
     let s:tfs_tfpt='"'.s:pfiles.'\Microsoft Team Foundation Server 2010 Power Tools\TFPT.exe"'
 elseif (filereadable(s:pfiles.'\Microsoft Team Foundation Server 2008 Power Tools\TFPT.exe'))
     let s:tfs_tfpt='"'.s:pfiles.'\Microsoft Team Foundation Server 2008 Power Tools\TFPT.exe"'
@@ -133,8 +138,6 @@ function! TfWindow(cmdline, label, filetype, mode, size)
 		norm o
 	endif
 
-    " Execute the TFS command in such as was as to allow ^"^" quoting of
-	" parameters
     silent! exe 'noautocmd r!'.escaped_cmdline
 
     " Make sure syntax highlighting works if we're viewing code
@@ -187,9 +190,9 @@ function! TfViewVer(...)
     let file_path=expand('%:p')
 
     if (ver < 0)
-        let cmd=s:tfs_tf.' view /console ^"'.file_path.'^"'
+        let cmd=s:tfs_tf.' view /console "'.file_path.'"'
     else
-        let cmd=s:tfs_tf.' view /console ^"'.file_path.'^" /version:'.ver
+        let cmd=s:tfs_tf.' view /console "'.file_path.'" /version:'.ver
     endif
 
     call TfWindow(cmd, ver, expand('%:e'), s:window_mode_viewer, 0)
@@ -241,7 +244,7 @@ endfunction
 "
 function! TfCheckin(checkinfile, commentfile)
 
-    let command = s:tfs_tf.' checkin ^"'.a:checkinfile.'^" /comment:@'.a:commentfile
+    let command = s:tfs_tf.' checkin "'.a:checkinfile.'" /comment:@'.a:commentfile
     exe 'bd '.a:commentfile
     wincmd t
     exe 'e '.a:checkinfile
@@ -317,14 +320,14 @@ endfunction
 " -----------------------------------------------------------------------------------------
 
 function! TfPopup(cmd)
-    let command = s:tfs_tf.' '.a:cmd.' ^"'.expand('%:p').'^"'
+    let command = s:tfs_tf.' '.a:cmd.' "'.expand('%:p').'"'
     call TfWindow(command, "", "human", s:window_mode_popup, s:popup_size)
 endfunction
 
 " -----------------------------------------------------------------------------------------
 
 function! TfBigPopup(cmd)
-    let command = s:tfs_tf.' '.a:cmd.' ^"'.expand('%:p').'^"'
+    let command = s:tfs_tf.' '.a:cmd.' "'.expand('%:p').'"'
     call TfWindow(command, "", "human", s:window_mode_popup, s:bigpopup_size)
 endfunction
 
@@ -348,8 +351,8 @@ command! TfPtHelp                     :call TfCmd(s:tfs_tfpt, "help")
 command! -complete=file -nargs=1 Tf   :call TfCmd(s:tfs_tf, <args>)
 command! -complete=file -nargs=1 TfPt :call TfCmd(s:tfs_tfpt, <args>)
 command! -nargs=? TfGetVersion        :call TfGetVersion(<args>)
-command! TfHistory                    :call TfWindow(s:tfs_tf.' history '.s:tfs_recurse_command.' ^"#^"', "", "tfcmd", s:window_mode_popup, s:bigpopup_size)
-command! TfHistoryDetailed            :call TfWindow(s:tfs_tf.' history /format:detailed '.s:tfs_recurse_command.' ^"#^"', "", "tfcmd", s:window_mode_popup, s:bigpopup_size)
+command! TfHistory                    :call TfWindow(s:tfs_tf.' history '.s:tfs_recurse_command.' "#"', "", "tfcmd", s:window_mode_popup, s:bigpopup_size)
+command! TfHistoryDetailed            :call TfWindow(s:tfs_tf.' history /format:detailed '.s:tfs_recurse_command.' "#"', "", "tfcmd", s:window_mode_popup, s:bigpopup_size)
 command! TfAnnotate                   :call TfUiCmd(s:tfs_tfpt, "annotate ".expand('%:p'))
 command! TfDiffLatest                 :call TfDiffVer("T")
 command! -nargs=? TfDiffVer           :call TfDiffVer(<args>)
