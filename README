@@ -8,7 +8,6 @@ editing files with VIM.  It supports TFS with Visual Studio 2005,2008 &
 
   * Add/Check-in/Checkout/Revert/Get Latest
   * Getting specific versions of the current file
-  * Diffing the current file against the latest version
   * Checking which files have been modified
   * Looking at the history of the current file
   * Diffing the current file against a particular changeset
